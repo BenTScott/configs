@@ -1,0 +1,24 @@
+# Homebrew
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+
+# Path
+export PATH="$HOME/bin:$PATH"
+export FZF_BASE="$(brew --prefix)/opt/fzf"
+
+# Mise
+eval "$(mise activate zsh)"
+
+# Direnv
+eval "$(direnv hook zsh)"
+
+# Aliases
+alias bb='brazil-build'
+alias bbb='eda build brazil-build'
+alias bbc='eda build -c brazil-build'
+alias gstall='eda run -- bash -c '\''printf "$(git rev-list --count HEAD...origin) commit(s) ahead\n$(git status -s)\n"'\'''
+alias resetgomod='eda run -- sh -c '\''if [[ -f go.mod ]]; then git checkout HEAD -- go.mod go.sum; fi'\'''
+
+# Autosuggestions & syntax highlighting
+source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+source $(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+

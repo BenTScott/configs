@@ -1,0 +1,3 @@
+#!/bin/bash
+
+curl "$@" --fail-with-body -L --cookie ~/.midway/cookie --cookie-jar ~/.midway/cookie

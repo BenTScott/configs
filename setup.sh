@@ -1,45 +1,43 @@
 #!/bin/bash
 set -euxo pipefail
 
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
-echo "export SHELL=\$(which fish)" >> ~/.zshrc
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Install homebrew
-echo "Installing homebrew"
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+if ! command -v brew &>/dev/null; then
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+fi
 
-echo "Adding homebrew to zsh path"
-(echo; echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"') >> ~/.zprofile
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
 # Install brew packages
-brew install nvim fish fzf tmux ripgrep
+brew install nvim fzf ripgrep mise direnv zsh-autosuggestions zsh-syntax-highlighting thefuck
 
-mkdir -p ~/.config
-cp -r ./nvim ~/.config/nvim
-cp ./tmux/.tmux.conf ~/
+# Install oh-my-zsh
+if [ ! -d "$HOME/.oh-my-zsh" ]; then
+  RUNZSH=no sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" --unattended
+fi
 
-# Make fish default
-which fish | sudo tee -a /etc/shells
-sudo yum install util-linux-user -y
-chsh -s $(which fish)
-usermod -s $(which fish) $USER
+# Symlink configs
+mkdir -p ~/.config/mise
+ln -sf "$SCRIPT_DIR/nvim" ~/.config/nvim
+ln -sf "$SCRIPT_DIR/tmux/.tmux.conf" ~/.tmux.conf
+ln -sf "$SCRIPT_DIR/mise/config.toml" ~/.config/mise/config.toml
+ln -sf "$SCRIPT_DIR/.zshrc.local" ~/.zshrc.local
+
+# Symlink scripts to ~/bin
+mkdir -p ~/bin
+for script in "$SCRIPT_DIR"/scripts/*; do
+  ln -sf "$script" ~/bin/
+done
 
 # TMUX plugin manager
-git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
+  git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+fi
 
-# Instal NVM
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+# Configure zsh
+sed -i 's/^plugins=(.*/plugins=(git aliases aws fzf ssh thefuck vi-mode)/' ~/.zshrc
+grep -q 'source ~/.zshrc.local' ~/.zshrc || echo 'source ~/.zshrc.local' >> ~/.zshrc
 
-# Rust
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-
-# Install Go
-wget https://go.dev/dl/go1.20.3.linux-amd64.tar.gz
-sudo tar -C /usr/local -xzf go1.20.3.linux-amd64.tar.gz
-rm go1.20.3.linux-amd64.tar.gz
-
-eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-source ~/.zshrc
-
-fish setup.fish
+echo "Done! Start a new zsh session to use your config."
