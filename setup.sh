@@ -4,35 +4,40 @@ set -euxo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Install homebrew
-echo "Installing homebrew"
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+if ! command -v brew &>/dev/null; then
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+fi
 
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
 # Install brew packages
-brew install nvim fzf tmux ripgrep mise direnv zsh-autosuggestions zsh-syntax-highlighting
+brew install nvim fzf ripgrep mise direnv zsh-autosuggestions zsh-syntax-highlighting
 
-# Install oh-my-zsh (don't let it launch a new shell)
-RUNZSH=no sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" --unattended
+# Install oh-my-zsh
+if [ ! -d "$HOME/.oh-my-zsh" ]; then
+  RUNZSH=no sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" --unattended
+fi
 
 # Symlink configs
 mkdir -p ~/.config/mise
-ln -s "$SCRIPT_DIR/nvim" ~/.config/nvim
-ln -s "$SCRIPT_DIR/tmux/.tmux.conf" ~/.tmux.conf
-ln -s "$SCRIPT_DIR/mise/config.toml" ~/.config/mise/config.toml
-ln -s "$SCRIPT_DIR/.zshrc.local" ~/.zshrc.local
+ln -sf "$SCRIPT_DIR/nvim" ~/.config/nvim
+ln -sf "$SCRIPT_DIR/tmux/.tmux.conf" ~/.tmux.conf
+ln -sf "$SCRIPT_DIR/mise/config.toml" ~/.config/mise/config.toml
+ln -sf "$SCRIPT_DIR/.zshrc.local" ~/.zshrc.local
 
 # Symlink scripts to ~/bin
 mkdir -p ~/bin
 for script in "$SCRIPT_DIR"/scripts/*; do
-  ln -s "$script" ~/bin/
+  ln -sf "$script" ~/bin/
 done
 
 # TMUX plugin manager
-git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
+  git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+fi
 
 # Configure zsh
 sed -i 's/^plugins=(.*/plugins=(git aliases aws fzf ssh thefuck vi-mode)/' ~/.zshrc
-echo 'source ~/.zshrc.local' >> ~/.zshrc
+grep -q 'source ~/.zshrc.local' ~/.zshrc || echo 'source ~/.zshrc.local' >> ~/.zshrc
 
 echo "Done! Start a new zsh session to use your config."
