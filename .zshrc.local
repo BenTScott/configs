@@ -3,6 +3,7 @@ eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
 # Path
 export PATH="$HOME/bin:$PATH"
+export PATH="$HOME/.toolbox/bin:$PATH"
 export FZF_BASE="$(brew --prefix)/opt/fzf"
 
 # Mise
@@ -22,3 +23,4 @@ alias resetgomod='eda run -- sh -c '\''if [[ -f go.mod ]]; then git checkout HEA
 source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 source $(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
+ZSH_AUTOSUGGEST_STRATEGY=(history completion)
