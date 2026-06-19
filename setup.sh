@@ -27,9 +27,7 @@ ln -sf "$SCRIPT_DIR/.zshrc.local" ~/.zshrc.local
 
 # Symlink scripts to ~/bin
 mkdir -p ~/bin
-for script in "$SCRIPT_DIR"/scripts/*; do
-  ln -sf "$script" ~/bin/
-done
+ln -sf "$SCRIPT_DIR/scripts" ~/bin/scripts
 
 # TMUX plugin manager
 if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
