@@ -24,12 +24,11 @@ ln -sf "$SCRIPT_DIR/nvim" ~/.config/nvim
 ln -sf "$SCRIPT_DIR/tmux/.tmux.conf" ~/.tmux.conf
 ln -sf "$SCRIPT_DIR/mise/global.toml" ~/.config/mise/config.toml
 ln -sf "$SCRIPT_DIR/.zshrc.local" ~/.zshrc.local
+ln -sf "$SCRIPT_DIR/.zshrc.amzn" ~/.zshrc.amzn
 
 # Symlink scripts to ~/bin
 mkdir -p ~/bin
-for script in "$SCRIPT_DIR"/scripts/*; do
-  ln -sf "$script" ~/bin/
-done
+ln -sf "$SCRIPT_DIR/scripts" ~/bin/scripts
 
 # TMUX plugin manager
 if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
@@ -39,5 +38,6 @@ fi
 # Configure zsh
 sed -i 's/^plugins=(.*/plugins=(git aliases aws fzf ssh thefuck vi-mode)/' ~/.zshrc
 grep -q 'source ~/.zshrc.local' ~/.zshrc || echo 'source ~/.zshrc.local' >> ~/.zshrc
+grep -q 'source ~/.zshrc.amzn' ~/.zshrc || echo 'source ~/.zshrc.amzn' >> ~/.zshrc
 
 echo "Done! Start a new zsh session to use your config."
