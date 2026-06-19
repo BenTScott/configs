@@ -1,0 +1,82 @@
+#!/usr/bin/env python3
+"""Generate Isengard federated AWS console deep links (defaults to the ReadOnly role).
+
+Wraps an AWS console destination URL in an Isengard /federate link so the target
+opens already authenticated into the given account using the given role. Mirrors
+the IsenLink userscript:
+https://improvement-ninjas.amazon.com/GreaseMonkey/isenLink.user.js
+"""
+import argparse
+import subprocess
+from urllib.parse import urlencode
+
+# Isengard /federate endpoint per AWS partition (default: classic commercial).
+ISENGARD_DOMAINS = {
+    "aws": "isengard.amazon.com",
+    "aws-cn": "isengard.cn-northwest-1.amazonaws.com.cn",
+    "aws-us-gov": "isengard.pdt.aws-border.com",
+    "aws-iso": "isengard.dca.c2s-border.ic.gov",
+    "aws-iso-b": "isengard.sc2s.sgov.gov",
+    "aws-iso-e": "isengard.ncl.aws-border.adc-e.uk",
+    "aws-iso-f": "isengard.ale.aws-border.hci.ic.gov",
+    "aws-eusc": "isengard.eusc-de-east-1.amazonaws.eu",
+}
+
+
+def federate(account, role, destination, partition):
+    # Long CloudWatch URLs must use the deeplink endpoint (per IsenLink).
+    destination = destination.replace(".com/cloudwatch/home", ".com/cloudwatch/deeplink.js")
+    qs = urlencode({"account": account, "role": role, "destination": destination})
+    return f"https://{ISENGARD_DOMAINS[partition]}/federate?{qs}"
+
+
+def logs_url(region, group, stream=None):
+    # The CloudWatch console double-encodes '/' in log group/stream names as $252F.
+    enc = lambda s: s.replace("/", "$252F")
+    frag = f"logsV2:log-groups/log-group/{enc(group)}"
+    if stream:
+        frag += f"/log-events/{enc(stream)}"
+    return f"https://{region}.console.aws.amazon.com/cloudwatch/home?region={region}#{frag}"
+
+
+def shorten(url):
+    # Reuse the existing ~/bin/tiny helper; fall back to the full URL on failure.
+    try:
+        out = subprocess.run(["tiny", url, "IsenLink"], capture_output=True, text=True, timeout=15)
+        short = out.stdout.strip()
+        return short if short.startswith("http") else url
+    except Exception:
+        return url
+
+
+def main():
+    common = argparse.ArgumentParser(add_help=False)
+    common.add_argument("--account", required=True, help="12-digit AWS account ID")
+    common.add_argument("--role", default="ReadOnly",
+                        help="IAM role to federate as (default: ReadOnly)")
+    common.add_argument("--partition", default="aws", choices=sorted(ISENGARD_DOMAINS),
+                        help="AWS partition (default: aws)")
+    common.add_argument("--tiny", action=argparse.BooleanOptionalAction, default=True,
+                        help="Shorten the result via tiny.amazon.com (default: on; use --no-tiny to disable)")
+
+    p = argparse.ArgumentParser(description=__doc__,
+                                formatter_class=argparse.RawDescriptionHelpFormatter)
+    sub = p.add_subparsers(dest="cmd", required=True)
+
+    u = sub.add_parser("url", parents=[common], help="Wrap an arbitrary AWS console URL")
+    u.add_argument("destination", help="AWS console URL to open")
+
+    l = sub.add_parser("logs", parents=[common],
+                       help="Build and wrap a CloudWatch Logs log-group/stream URL")
+    l.add_argument("--region", required=True)
+    l.add_argument("--group", required=True, help="Log group name, e.g. /aws/lambda/my-fn")
+    l.add_argument("--stream", help="Optional log stream name")
+
+    args = p.parse_args()
+    dest = args.destination if args.cmd == "url" else logs_url(args.region, args.group, args.stream)
+    link = federate(args.account, args.role, dest, args.partition)
+    print(shorten(link) if args.tiny else link)
+
+
+if __name__ == "__main__":
+    main()

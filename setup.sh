@@ -1,45 +1,37 @@
 #!/bin/bash
 set -euxo pipefail
 
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
-echo "export SHELL=\$(which fish)" >> ~/.zshrc
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+## Install oh-my-zsh
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" --unattended
+
+omz plugin enable aliases aws fzf ssh thefuck vi-mode
 
 # Install homebrew
 echo "Installing homebrew"
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-echo "Adding homebrew to zsh path"
-(echo; echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"') >> ~/.zprofile
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
 # Install brew packages
-brew install nvim fish fzf tmux ripgrep
+brew install nvim fzf tmux ripgrep mise direnv zsh-autosuggestions zsh-syntax-highlighting
 
-mkdir -p ~/.config
-cp -r ./nvim ~/.config/nvim
-cp ./tmux/.tmux.conf ~/
+# Symlink configs
+mkdir -p ~/.config/mise
+ln -s "$SCRIPT_DIR/nvim" ~/.config/nvim
+ln -s "$SCRIPT_DIR/tmux/.tmux.conf" ~/.tmux.conf
+ln -s "$SCRIPT_DIR/mise/config.toml" ~/.config/mise/config.toml
+ln -s "$SCRIPT_DIR/.zshrc.local" ~/.zshrc.local
 
-# Make fish default
-which fish | sudo tee -a /etc/shells
-sudo yum install util-linux-user -y
-chsh -s $(which fish)
-usermod -s $(which fish) $USER
+# Source custom config from omz's .zshrc
+echo 'source ~/.zshrc.local' >> ~/.zshrc
+
+# Symlink scripts to ~/bin
+mkdir -p ~/bin
+for script in "$SCRIPT_DIR"/scripts/*; do
+  ln -s "$script" ~/bin/
+done
 
 # TMUX plugin manager
 git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
-
-# Instal NVM
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
-
-# Rust
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-
-# Install Go
-wget https://go.dev/dl/go1.20.3.linux-amd64.tar.gz
-sudo tar -C /usr/local -xzf go1.20.3.linux-amd64.tar.gz
-rm go1.20.3.linux-amd64.tar.gz
-
-eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-source ~/.zshrc
-
-fish setup.fish

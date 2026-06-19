@@ -1,0 +1,25 @@
+#!/bin/bash
+
+if [ $# -eq 0 ]; then
+    echo "Usage: $0 <long_url> [comment]"
+    echo "Example: $0 https://www.amazon.com/ AMZN"
+    exit 1
+fi
+
+LONG_URL="$1"
+COMMENT="${2:-}"  # Use second parameter as comment if provided, empty string if not
+
+# URL encode the parameters
+ENCODED_URL=$(echo "$LONG_URL" | jq -sRr @uri)
+ENCODED_COMMENT=$(echo "$COMMENT" | jq -sRr @uri)
+
+# Construct the query parameters
+QUERY="name=$ENCODED_URL"
+if [ -n "$COMMENT" ]; then
+    QUERY="$QUERY&comment=$ENCODED_COMMENT"
+fi
+
+# Make the API call
+data=$(curl -k -s -X GET "https://tiny.amazon.com/submit/url?$QUERY" -H "Accept: application/json")
+url=$(echo $data | jq .short_url -r)
+echo $url
