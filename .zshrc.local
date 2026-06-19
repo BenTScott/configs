@@ -3,6 +3,7 @@ eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
 # Path
 export PATH="$HOME/bin:$PATH"
+export FZF_BASE="$(brew --prefix)/opt/fzf"
 
 # Mise
 eval "$(mise activate zsh)"

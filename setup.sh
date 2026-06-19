@@ -11,7 +11,7 @@ fi
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
 # Install brew packages
-brew install nvim fzf ripgrep mise direnv zsh-autosuggestions zsh-syntax-highlighting
+brew install nvim fzf ripgrep mise direnv zsh-autosuggestions zsh-syntax-highlighting thefuck
 
 # Install oh-my-zsh
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
