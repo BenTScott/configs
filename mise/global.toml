@@ -2,3 +2,6 @@
 node="26"
 go="1.26"
 python="3"
+
+[settings.node]
+gpg_verify = false

@@ -22,7 +22,7 @@ fi
 mkdir -p ~/.config/mise
 ln -sf "$SCRIPT_DIR/nvim" ~/.config/nvim
 ln -sf "$SCRIPT_DIR/tmux/.tmux.conf" ~/.tmux.conf
-ln -sf "$SCRIPT_DIR/mise/config.toml" ~/.config/mise/config.toml
+ln -sf "$SCRIPT_DIR/mise/global.toml" ~/.config/mise/config.toml
 ln -sf "$SCRIPT_DIR/.zshrc.local" ~/.zshrc.local
 
 # Symlink scripts to ~/bin
