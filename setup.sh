@@ -11,7 +11,7 @@ fi
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
 # Install brew packages
-brew install nvim fzf ripgrep mise direnv zsh-autosuggestions zsh-syntax-highlighting thefuck
+brew install nvim fzf ripgrep mise direnv zsh-autosuggestions zsh-syntax-highlighting thefuck delta
 
 # Install oh-my-zsh
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
@@ -21,7 +21,8 @@ fi
 # Symlink configs
 mkdir -p ~/.config/mise
 ln -sf "$SCRIPT_DIR/nvim" ~/.config/nvim
-ln -sf "$SCRIPT_DIR/tmux/.tmux.conf" ~/.tmux.conf
+ln -sf "$SCRIPT_DIR/.tmux.conf" ~/.tmux.conf
+ln -sf ~/configs/.gitconfig ~/.gitconfig
 ln -sf "$SCRIPT_DIR/mise/global.toml" ~/.config/mise/config.toml
 ln -sf "$SCRIPT_DIR/.zshrc.local" ~/.zshrc.local
 
