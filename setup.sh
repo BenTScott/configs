@@ -32,7 +32,7 @@ done
 git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
 
 # Configure zsh
-sed -i 's/^plugins=(.*/plugins=(aliases aws fzf ssh thefuck vi-mode)/' ~/.zshrc
+sed -i 's/^plugins=(.*/plugins=(git aliases aws fzf ssh thefuck vi-mode)/' ~/.zshrc
 echo 'source ~/.zshrc.local' >> ~/.zshrc
 
 echo "Done! Start a new zsh session to use your config."
